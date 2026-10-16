@@ -6,9 +6,9 @@ function oldCurve(x,mid,expo){const table=oldTable(mid,expo),v=clamp(Math.round(
 // Current upstream rc.c: quadratic Bezier segments, sampled at 12 points and interpolated.
 function newerTable(mid,expo,hover){const m=mid/100,e=expo/100,h=hover/100,a=[];for(let i=0;i<12;i++){const x=i/11;let t,y;if(x<=m){t=m?x/m:0;y=h*(t*t+(1+e)*t*(1-t))}else{t=(x-m)/(1-m);y=h*(1-t)*(1-t)+2*(h+(1-h)*(1-e)/2)*t*(1-t)+t*t}a.push(Math.round(y*1000)/1000)}return a}
 function newer(x,mid,expo,hover){const a=newerTable(mid,expo,hover),v=clamp(x,0,1)*11,i=Math.min(Math.floor(v),10);return a[i]+(v-i)*(a[i+1]-a[i])}
-let runId=0;
+let runId=0,lastPlot=null;
 async function calc(){
-const id=++runId;
+const id=++runId,startTime=performance.now();
 let match=$('dump').value.match(/set\s+thr_mid\s*=\s*(\d+)/i);if(match)$('mid').value=match[1];
 match=$('dump').value.match(/set\s+thr_expo\s*=\s*(\d+)/i);if(match)$('expo').value=match[1];
 const mid=clamp(Math.round(Number($('mid').value)),1,99),expo=clamp(Math.round(Number($('expo').value)),0,100);
@@ -55,8 +55,8 @@ const weightedRms=Math.sqrt(Math.max(0,best.err)/totalWeight)*100;
 $('newmid').textContent=(best.m/100).toFixed(2);$('newexpo').textContent=(best.e/100).toFixed(2);$('hover').textContent=(best.h/100).toFixed(2);$('error').textContent=rms.toFixed(3)+'%';
 $('status').textContent=(hoverMode?'Hover-priority weighted RMS: '+weightedRms.toFixed(3)+'%. ':'Overall best match. ')+(rms<0.1?'Very close match.':'No exact match exists within the available settings for this optimisation criterion.');
 $('cli').textContent='set thr_mid = '+best.m+'\nset thr_expo = '+best.e+'\nset thr_hover = '+best.h+'\nsave';
-draw(xs,target,predicted);
+lastPlot=[xs,target,predicted];draw(xs,target,predicted);$('progress').textContent+=' Time: '+((performance.now()-startTime)/1000).toFixed(2)+'s.';
 }
 function draw(xs,old,now){const c=$('graph'),dpr=devicePixelRatio||1,w=c.clientWidth,h=340;c.width=w*dpr;c.height=h*dpr;const ctx=c.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);const pad=38,xx=x=>pad+x*(w-2*pad),yy=y=>h-pad-y*(h-2*pad);ctx.strokeStyle='#314158';ctx.lineWidth=1;for(let i=0;i<=10;i++){ctx.beginPath();ctx.moveTo(xx(i/10),yy(0));ctx.lineTo(xx(i/10),yy(1));ctx.moveTo(xx(0),yy(i/10));ctx.lineTo(xx(1),yy(i/10));ctx.stroke()}for(const [values,color] of [[old,'#ffcc33'],[now,'#55d9ec']]){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();values.forEach((v,i)=>i?ctx.lineTo(xx(xs[i]),yy(v)):ctx.moveTo(xx(xs[i]),yy(v)));ctx.stroke()}ctx.fillStyle='#aebbd0';ctx.font='12px system-ui';ctx.fillText('0%',8,h-pad+4);ctx.fillText('100%',4,pad);ctx.fillText('100% stick',w-100,h-8)}
-$('convert').onclick=calc;$('mode').onchange=calc;$('copy').onclick=()=>navigator.clipboard.writeText($('cli').textContent);window.onresize=()=>calc();calc();
+$('convert').onclick=calc;$('mode').onchange=calc;$('copy').onclick=()=>navigator.clipboard.writeText($('cli').textContent);window.onresize=()=>{if(lastPlot)draw(...lastPlot)};calc();
 </script></body></html>
