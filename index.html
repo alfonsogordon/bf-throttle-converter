@@ -5,7 +5,7 @@ function oldTable(mid,expo){const a=[];for(let i=0;i<12;i++){const tmp=10*i-mid;
 function oldCurve(x,mid,expo){const table=oldTable(mid,expo),v=clamp(Math.round(x*1000),0,1000),idx=Math.trunc(v/100),rem=v-idx*100;return (table[idx]+Math.trunc(rem*(table[idx+1]-table[idx])/100)-1000)/1000}
 // Current upstream rc.c: quadratic Bezier segments, sampled at 12 points and interpolated.
 function newerTable(mid,expo,hover){const m=mid/100,e=expo/100,h=hover/100,a=[];for(let i=0;i<12;i++){const x=i/11;let t,y;if(x<=m){t=m?x/m:0;y=h*(t*t+(1+e)*t*(1-t))}else{t=(x-m)/(1-m);y=h*(1-t)*(1-t)+2*(h+(1-h)*(1-e)/2)*t*(1-t)+t*t}a.push(Math.round(y*1000)/1000)}return a}
-function newer(x,mid,expo,hover){const a=newerTable(mid,expo,hover),v=clamp(x,0,1)*11,i=Math.min(Math.floor(v),10);return a[i]+(v-i)*(a[i+1]-a[i])}
+function newer(x,mid,expo,hover){const a=newerTable(mid,expo,hover),v=clamp(Math.round(x*1000),0,1000),scaled=v*11,i=Math.floor(scaled/1000),rem=scaled%1000;if(i>=11)return a[11];return (Math.round(a[i]*1000)+Math.trunc(rem*(Math.round(a[i+1]*1000)-Math.round(a[i]*1000))/1000)-1000)/1000+1}
 let runId=0,lastPlot=null;
 async function calc(){
 const id=++runId,startTime=performance.now(),reverse=$('direction').value==='reverse';
@@ -62,13 +62,13 @@ function objective(tab){
  for(let i=0;i<12;i++){const y=tab[i];sum+=diag[i]*y*y-2*linear[i]*y;if(i<11)sum+=2*cross[i]*y*tab[i+1]}
  return sum;
 }
-let best={err:Infinity};
+let best={err:Infinity},shortlist=[];
 $('convert').disabled=true;
 for(let mi=1;mi<=99;mi++){
  for(let ei=0;ei<=100;ei++){
   for(let hi=0;hi<=100;hi++){
    const err=objective(newerTable(mi,ei,hi));
-   if(err<best.err-1e-11)best={err,m:mi,e:ei,h:hi};
+   if(err<best.err-1e-11)best={err,m:mi,e:ei,h:hi};if(shortlist.length<50||err<shortlist[shortlist.length-1].err){shortlist.push({err,m:mi,e:ei,h:hi});shortlist.sort((a,b)=>a.err-b.err);if(shortlist.length>50)shortlist.pop();}
   }
  }
  if(mi%3===0){
@@ -78,7 +78,9 @@ for(let mi=1;mi<=99;mi++){
  }
 }
 if(id!==runId)return;
-$('convert').disabled=false;$('progress').textContent='Exhaustive search complete (1,009,899 combinations).';
+// Re-rank the 50 strongest continuous-model candidates using exact integer interpolation.
+let refined={err:Infinity};for(const candidate of shortlist){const tab=newerTable(candidate.m,candidate.e,candidate.h);let err=0;for(let k=0;k<1001;k++){const scaled=k*11,j=Math.floor(scaled/1000),r=scaled%1000;const a=Math.round(tab[j]*1000),b=Math.round(tab[Math.min(11,j+1)]*1000);const y=(a+Math.trunc(r*(b-a)/1000)-1000)/1000+1;const d=y-target[k];err+=weights[k]*d*d}if(err<refined.err)refined={...candidate,err}}best=refined;
+$('convert').disabled=false;$('progress').textContent='Full search plus exact integer-interpolation refinement complete.';
 const predicted=xs.map(x=>newer(x,best.m,best.e,best.h));
 const rms=Math.sqrt(predicted.reduce((a,y,k)=>a+(y-target[k])**2,0)/xs.length)*100;const maxError=Math.max(...predicted.map((y,k)=>Math.abs(y-target[k])))*100;
 const weightedRms=Math.sqrt(Math.max(0,best.err)/totalWeight)*100;
