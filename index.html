@@ -68,7 +68,7 @@ for(let mi=1;mi<=99;mi++){
  for(let ei=0;ei<=100;ei++){
   for(let hi=0;hi<=100;hi++){
    const err=objective(newerTable(mi,ei,hi));
-   if(err<best.err-1e-11)best={err,m:mi,e:ei,h:hi};if(shortlist.length<50||err<shortlist[shortlist.length-1].err){shortlist.push({err,m:mi,e:ei,h:hi});shortlist.sort((a,b)=>a.err-b.err);if(shortlist.length>50)shortlist.pop();}
+   if(err<best.err-1e-11)best={err,m:mi,e:ei,h:hi};if(shortlist.length<1000||err<shortlist[shortlist.length-1].err){shortlist.push({err,m:mi,e:ei,h:hi});shortlist.sort((a,b)=>a.err-b.err);if(shortlist.length>1000)shortlist.pop();}
   }
  }
  if(mi%3===0){
@@ -78,9 +78,9 @@ for(let mi=1;mi<=99;mi++){
  }
 }
 if(id!==runId)return;
-// Re-rank the 50 strongest continuous-model candidates using exact integer interpolation.
+// Re-rank the 1,000 strongest continuous-model candidates using exact integer interpolation.
 let refined={err:Infinity};for(const candidate of shortlist){const tab=newerTable(candidate.m,candidate.e,candidate.h);let err=0;for(let k=0;k<1001;k++){const scaled=k*11,j=Math.floor(scaled/1000),r=scaled%1000;const a=Math.round(tab[j]*1000),b=Math.round(tab[Math.min(11,j+1)]*1000);const y=(a+Math.trunc(r*(b-a)/1000)-1000)/1000+1;const d=y-target[k];err+=weights[k]*d*d}if(err<refined.err)refined={...candidate,err}}best=refined;
-$('convert').disabled=false;$('progress').textContent='Full search plus exact integer-interpolation refinement complete.';
+$('convert').disabled=false;$('progress').textContent='Full search plus 1,000-candidate firmware interpolation check complete.';
 const predicted=xs.map(x=>newer(x,best.m,best.e,best.h));
 const rms=Math.sqrt(predicted.reduce((a,y,k)=>a+(y-target[k])**2,0)/xs.length)*100;const maxError=Math.max(...predicted.map((y,k)=>Math.abs(y-target[k])))*100;
 const weightedRms=Math.sqrt(Math.max(0,best.err)/totalWeight)*100;
