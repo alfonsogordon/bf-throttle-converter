@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BF Throttle Converter</title><style>:root{color-scheme:dark;font-family:system-ui,Arial;background:#0b1019;color:#eaf1fc}*{box-sizing:border-box}body{margin:0;padding:28px 16px}main{max-width:950px;margin:auto}h1{font-size:clamp(28px,5vw,44px);margin-bottom:4px}p{color:#aebbd0}section{background:#151e2d;border:1px solid #2a3950;border-radius:16px;padding:20px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}label{display:block;color:#cbd8eb;font-size:14px;margin-bottom:7px}input{width:100%;padding:12px;background:#0b1320;color:white;border:1px solid #42546c;border-radius:8px;font-size:17px}button{background:#ffcc33;color:#121820;border:0;padding:12px 20px;border-radius:9px;font-weight:800;cursor:pointer}canvas{width:100%;height:340px;display:block}pre{white-space:pre-wrap;background:#0b1320;padding:16px;border-radius:10px}small{color:#aebbd0}.tag{color:#ffcc33;font-weight:700}.stat{font-size:25px;font-weight:800}a{color:#ffcc33}</style></head><body><main><div class="tag">BETAFLIGHT UTILITY • EXPERIMENTAL</div><h1>Throttle Expo Converter</h1><p>Compare the legacy Betaflight 4.5 throttle curve against the newer hover-point curve. Finds the closest new settings and shows the remaining difference.</p><section><h2>Old settings · Betaflight 4.5.x</h2><div class="grid"><div><label for="mid">Throttle MID (0–100)</label><input id="mid" type="number" min="1" max="99" value="30"></div><div><label for="expo">Throttle EXPO (0–100)</label><input id="expo" type="number" min="0" max="100" value="60"></div></div><p><small>You can paste a CLI dump containing <code>set thr_mid</code> and <code>set thr_expo</code> below.</small></p><textarea id="dump" rows="3" style="width:100%;background:#0b1320;color:white;border:1px solid #42546c;border-radius:8px;padding:10px" placeholder="set thr_mid = 30&#10;set thr_expo = 60"></textarea><div><label for="mode">Matching priority</label><select id="mode" style="width:100%;padding:12px;background:#0b1320;color:white;border:1px solid #42546c;border-radius:8px"><option value="overall">Closest overall curve</option><option value="hover">Prioritise original Throttle MID</option></select><small>Hover priority automatically focuses on your original throttle MID stick position.</small></div><p><button id="convert">Convert settings</button></p></section><section><h2>Closest newer-firmware settings</h2><div class="grid"><div><label>Throttle MID</label><div class="stat" id="newmid">—</div></div><div><label>Throttle EXPO</label><div class="stat" id="newexpo">—</div></div><div><label>Hover Point</label><div class="stat" id="hover">—</div></div><div><label>Curve error (RMS)</label><div class="stat" id="error">—</div></div></div><p id="status"></p><pre id="cli"></pre><button id="copy">Copy CLI</button></section><section><h2>Throttle response</h2><canvas id="graph"></canvas><p><small><span style="color:#ffcc33">━━</span> Old 4.5 curve &nbsp; <span style="color:#55d9ec">━━</span> New hover-point curve. Horizontal: stick position. Vertical: throttle output.</small></p></section><p><small>Uses sampled throttle-lookup curves and searches integer settings for a least-squares match. Not an official Betaflight tool. Curves modeled from Betaflight 4.5.5, 2025.12.5 and 2026.6.2 source. Firmware rounds newer lookup values to whole microseconds; this tool models that rounding. Confirm firmware version and test safely with props removed before flying. Throttle limits, 3D mode and other downstream processing are not modeled. <a href="https://github.com/betaflight/betaflight">Betaflight source</a>.</small></p></main><script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BF Throttle Converter</title><style>:root{color-scheme:dark;font-family:system-ui,Arial;background:#0b1019;color:#eaf1fc}*{box-sizing:border-box}body{margin:0;padding:28px 16px}main{max-width:950px;margin:auto}h1{font-size:clamp(28px,5vw,44px);margin-bottom:4px}p{color:#aebbd0}section{background:#151e2d;border:1px solid #2a3950;border-radius:16px;padding:20px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}label{display:block;color:#cbd8eb;font-size:14px;margin-bottom:7px}input{width:100%;padding:12px;background:#0b1320;color:white;border:1px solid #42546c;border-radius:8px;font-size:17px}button{background:#ffcc33;color:#121820;border:0;padding:12px 20px;border-radius:9px;font-weight:800;cursor:pointer}canvas{width:100%;height:340px;display:block}pre{white-space:pre-wrap;background:#0b1320;padding:16px;border-radius:10px}small{color:#aebbd0}.tag{color:#ffcc33;font-weight:700}.stat{font-size:25px;font-weight:800}a{color:#ffcc33}</style></head><body><main><div class="tag">BETAFLIGHT UTILITY • EXPERIMENTAL</div><h1>Throttle Expo Converter</h1><p>Compare the legacy Betaflight 4.5 throttle curve against the newer hover-point curve. Finds the closest new settings and shows the remaining difference.</p><section><h2>Old settings · Betaflight 4.5.x</h2><div class="grid"><div><label for="mid">Throttle MID (0–100)</label><input id="mid" type="number" min="1" max="99" value="30"></div><div><label for="expo">Throttle EXPO (0–100)</label><input id="expo" type="number" min="0" max="100" value="60"></div></div><p><small>You can paste a CLI dump containing <code>set thr_mid</code> and <code>set thr_expo</code> below.</small></p><textarea id="dump" rows="3" style="width:100%;background:#0b1320;color:white;border:1px solid #42546c;border-radius:8px;padding:10px" placeholder="set thr_mid = 30&#10;set thr_expo = 60"></textarea><div><label for="mode">Matching priority</label><select id="mode" style="width:100%;padding:12px;background:#0b1320;color:white;border:1px solid #42546c;border-radius:8px"><option value="overall">Closest overall curve</option><option value="hover">Prioritise original Throttle MID</option></select><small>Hover priority automatically focuses on your original throttle MID stick position.</small></div><p><button id="convert">Find most precise match</button> <small id="progress" aria-live="polite"></small></p></section><section><h2>Closest newer-firmware settings</h2><div class="grid"><div><label>Throttle MID</label><div class="stat" id="newmid">—</div></div><div><label>Throttle EXPO</label><div class="stat" id="newexpo">—</div></div><div><label>Hover Point</label><div class="stat" id="hover">—</div></div><div><label>Curve error (RMS)</label><div class="stat" id="error">—</div></div></div><p id="status"></p><pre id="cli"></pre><button id="copy">Copy CLI</button></section><section><h2>Throttle response</h2><canvas id="graph"></canvas><p><small><span style="color:#ffcc33">━━</span> Old 4.5 curve &nbsp; <span style="color:#55d9ec">━━</span> New hover-point curve. Horizontal: stick position. Vertical: throttle output.</small></p></section><p><small>Uses 1,001 comparison points and exhaustively evaluates all 1,009,899 integer MID/EXPO/HOVER combinations using firmware-rounded lookup tables for a weighted least-squares match. Not an official Betaflight tool. Curves modeled from Betaflight 4.5.5, 2025.12.5 and 2026.6.2 source. Firmware rounds newer lookup values to whole microseconds; this tool models that rounding. Confirm firmware version and test safely with props removed before flying. Throttle limits, 3D mode and other downstream processing are not modeled. <a href="https://github.com/betaflight/betaflight">Betaflight source</a>.</small></p></main><script>
 const $=id=>document.getElementById(id),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 // Betaflight 4.5.1 rc.c: integer lookup table at 0,100,...,1100 and integer interpolation.
 function oldTable(mid,expo){const a=[];for(let i=0;i<12;i++){const tmp=10*i-mid;let y=1;if(tmp>0)y=100-mid;if(tmp<0)y=mid;const term=Math.trunc(expo*tmp*tmp/(y*y));const raw=10*mid+Math.trunc(tmp*(100-expo+term)/10);a.push(1000+raw)}return a}
@@ -6,32 +6,56 @@ function oldCurve(x,mid,expo){const table=oldTable(mid,expo),v=clamp(Math.round(
 // Current upstream rc.c: quadratic Bezier segments, sampled at 12 points and interpolated.
 function newerTable(mid,expo,hover){const m=mid/100,e=expo/100,h=hover/100,a=[];for(let i=0;i<12;i++){const x=i/11;let t,y;if(x<=m){t=m?x/m:0;y=h*(t*t+(1+e)*t*(1-t))}else{t=(x-m)/(1-m);y=h*(1-t)*(1-t)+2*(h+(1-h)*(1-e)/2)*t*(1-t)+t*t}a.push(Math.round(y*1000)/1000)}return a}
 function newer(x,mid,expo,hover){const a=newerTable(mid,expo,hover),v=clamp(x,0,1)*11,i=Math.min(Math.floor(v),10);return a[i]+(v-i)*(a[i+1]-a[i])}
-function calc(){
-let match=$('dump').value.match(/set\s+thr_mid\s*=\s*(\d+)/i);if(match)$('mid').value=match[1];match=$('dump').value.match(/set\s+thr_expo\s*=\s*(\d+)/i);if(match)$('expo').value=match[1];
+let runId=0;
+async function calc(){
+const id=++runId;
+let match=$('dump').value.match(/set\s+thr_mid\s*=\s*(\d+)/i);if(match)$('mid').value=match[1];
+match=$('dump').value.match(/set\s+thr_expo\s*=\s*(\d+)/i);if(match)$('expo').value=match[1];
 const mid=clamp(Math.round(Number($('mid').value)),1,99),expo=clamp(Math.round(Number($('expo').value)),0,100);
-const xs=Array.from({length:101},(_,i)=>i/100),target=xs.map(x=>oldCurve(x,mid,expo));
+const xs=Array.from({length:1001},(_,i)=>i/1000);
+const old=oldTable(mid,expo);
+const target=xs.map(x=>{const v=Math.round(x*1000),j=Math.floor(v/100),r=v-j*100;return (old[j]+Math.trunc(r*(old[j+1]-old[j])/100)-1000)/1000});
 const hoverMode=$('mode').value==='hover',focus=mid/100;
 const weights=xs.map(x=>hoverMode?1+12*Math.exp(-0.5*((x-focus)/0.12)**2):1);
-let best={err:Infinity};
-function score(mi,ei,hi){const tab=newerTable(mi,ei,hi);let err=0;for(let k=0;k<101;k++){const pos=xs[k]*11,j=Math.min(10,Math.floor(pos)),t=pos-j;const y=tab[j]+t*(tab[j+1]-tab[j]);const d=y-target[k];err+=weights[k]*d*d}return err}
-for(let mi=1;mi<=99;mi++)for(let ei=0;ei<=100;ei++){
-// Estimate hover analytically using the unrounded curves, then evaluate
-// integer candidates using the actual rounded firmware lookup.
-const t0=newerTable(mi,ei,0),t1=newerTable(mi,ei,100);let numerator=0,denominator=0;
-for(let k=0;k<101;k++){const p=xs[k]*11,j=Math.min(10,Math.floor(p)),t=p-j;
-const a=t0[j]+t*(t0[j+1]-t0[j]),b=t1[j]+t*(t1[j+1]-t1[j])-a;
-numerator+=weights[k]*b*(target[k]-a);denominator+=weights[k]*b*b}
-const estimate=clamp(Math.round(100*numerator/(denominator||1)),0,100);
-for(let hi=Math.max(0,estimate-3);hi<=Math.min(100,estimate+3);hi++){
-const err=score(mi,ei,hi);if(err<best.err)best={err,m:mi,e:ei,h:hi}}
+// A sampled 12-point lookup curve is piecewise linear. Precompute the exact
+// weighted least-squares objective as a tridiagonal quadratic form.
+// Each candidate then needs only its 12 firmware-rounded lookup values.
+const diag=new Float64Array(12),cross=new Float64Array(11),linear=new Float64Array(12);
+let constant=0,totalWeight=0;
+for(let k=0;k<xs.length;k++){
+ const p=xs[k]*11,j=Math.min(10,Math.floor(p)),b=p-j,a=1-b,w=weights[k],y=target[k];
+ diag[j]+=w*a*a;diag[j+1]+=w*b*b;cross[j]+=w*a*b;
+ linear[j]+=w*a*y;linear[j+1]+=w*b*y;constant+=w*y*y;totalWeight+=w;
 }
-// Local integer-coordinate refinement, including hover-point rounding.
-let improved=true;while(improved){improved=false;for(const [dm,de,dh] of [[-1,0,0],[1,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1]]){const mi=best.m+dm,ei=best.e+de,hi=best.h+dh;if(mi<1||mi>99||ei<0||ei>100||hi<0||hi>100)continue;const err=score(mi,ei,hi);if(err+1e-12<best.err){best={err,m:mi,e:ei,h:hi};improved=true}}}
+function objective(tab){
+ let sum=constant;
+ for(let i=0;i<12;i++){const y=tab[i];sum+=diag[i]*y*y-2*linear[i]*y;if(i<11)sum+=2*cross[i]*y*tab[i+1]}
+ return sum;
+}
+let best={err:Infinity};
+$('convert').disabled=true;
+for(let mi=1;mi<=99;mi++){
+ for(let ei=0;ei<=100;ei++){
+  for(let hi=0;hi<=100;hi++){
+   const err=objective(newerTable(mi,ei,hi));
+   if(err<best.err-1e-11)best={err,m:mi,e:ei,h:hi};
+  }
+ }
+ if(mi%3===0){
+  $('progress').textContent='Checking all 1,009,899 combinations: '+Math.round(mi/99*100)+'%';
+  await new Promise(resolve=>setTimeout(resolve,0));
+  if(id!==runId)return;
+ }
+}
+if(id!==runId)return;
+$('convert').disabled=false;$('progress').textContent='Exhaustive search complete (1,009,899 combinations).';
 const predicted=xs.map(x=>newer(x,best.m,best.e,best.h));
-const rms=Math.sqrt(predicted.reduce((a,y,k)=>a+(y-target[k])**2,0)/101)*100;
-$('newmid').textContent=(best.m/100).toFixed(2);$('newexpo').textContent=(best.e/100).toFixed(2);$('hover').textContent=(best.h/100).toFixed(2);$('error').textContent=rms.toFixed(2)+'%';
-$('status').textContent=(hoverMode?'Hover-priority match. ':'Overall curve match. ')+(rms<0.1?'Very close.':'Approximate — inspect the graph and test before flying.');
-$('cli').textContent='set thr_mid = '+best.m+'\nset thr_expo = '+best.e+'\nset thr_hover = '+best.h+'\nsave';draw(xs,target,predicted)
+const rms=Math.sqrt(predicted.reduce((a,y,k)=>a+(y-target[k])**2,0)/xs.length)*100;
+const weightedRms=Math.sqrt(Math.max(0,best.err)/totalWeight)*100;
+$('newmid').textContent=(best.m/100).toFixed(2);$('newexpo').textContent=(best.e/100).toFixed(2);$('hover').textContent=(best.h/100).toFixed(2);$('error').textContent=rms.toFixed(3)+'%';
+$('status').textContent=(hoverMode?'Hover-priority weighted RMS: '+weightedRms.toFixed(3)+'%. ':'Overall best match. ')+(rms<0.1?'Very close match.':'No exact match exists within the available settings for this optimisation criterion.');
+$('cli').textContent='set thr_mid = '+best.m+'\nset thr_expo = '+best.e+'\nset thr_hover = '+best.h+'\nsave';
+draw(xs,target,predicted);
 }
 function draw(xs,old,now){const c=$('graph'),dpr=devicePixelRatio||1,w=c.clientWidth,h=340;c.width=w*dpr;c.height=h*dpr;const ctx=c.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);const pad=38,xx=x=>pad+x*(w-2*pad),yy=y=>h-pad-y*(h-2*pad);ctx.strokeStyle='#314158';ctx.lineWidth=1;for(let i=0;i<=10;i++){ctx.beginPath();ctx.moveTo(xx(i/10),yy(0));ctx.lineTo(xx(i/10),yy(1));ctx.moveTo(xx(0),yy(i/10));ctx.lineTo(xx(1),yy(i/10));ctx.stroke()}for(const [values,color] of [[old,'#ffcc33'],[now,'#55d9ec']]){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();values.forEach((v,i)=>i?ctx.lineTo(xx(xs[i]),yy(v)):ctx.moveTo(xx(xs[i]),yy(v)));ctx.stroke()}ctx.fillStyle='#aebbd0';ctx.font='12px system-ui';ctx.fillText('0%',8,h-pad+4);ctx.fillText('100%',4,pad);ctx.fillText('100% stick',w-100,h-8)}
 $('convert').onclick=calc;$('mode').onchange=calc;$('copy').onclick=()=>navigator.clipboard.writeText($('cli').textContent);window.onresize=()=>calc();calc();
