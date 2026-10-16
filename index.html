@@ -7,17 +7,36 @@ function oldCurve(x,mid,expo){const table=oldTable(mid,expo),v=clamp(Math.round(
 // Mirror firmware float32 arithmetic and C lrintf ties-to-even lookup quantisation.
 const f32=Math.fround;
 function roundEven(v){const n=Math.floor(v),fraction=v-n;return fraction<0.5?n:fraction>0.5?n+1:n+(n%2)}
+// Port of Betaflight 2025.12 rc.c quadraticBezier, including its float32
+// arithmetic, t clamping and PWM lookup quantisation.
+function bfBezier(x,p0x,p1x,p2x,p0y,p1y,p2y){
+ const a=f32(f32(p0x-f32(2*p1x))+p2x);
+ const b=f32(f32(2*p1x)-f32(2*p0x));
+ const c=f32(p0x-x);
+ let t=0;
+ if(Math.abs(a)<1e-6){if(Math.abs(b)>1e-6)t=f32(f32(-c)/b)}
+ else{
+  const disc=f32(f32(b*b)-f32(f32(4*a)*c));
+  if(disc>=0){const root=f32(Math.sqrt(disc)),den=f32(2*a);
+   const t1=f32(f32(-b+root)/den),t2=f32(f32(-b-root)/den);
+   t=t1>=0&&t1<=1?t1:t2;
+  }
+ }
+ t=clamp(t,0,1);
+ const u=f32(1-t);
+ return f32(f32(f32(f32(u*u)*p0y)+f32(f32(f32(2*u)*t)*p1y))+f32(f32(t*t)*p2y));
+}
 function newerTable(mid,expo,hover){
  const m=f32(mid/100),e=f32(expo/100),h=f32(hover/100),a=[];
- const cp1y=f32(f32(h*0.5)*f32(1+e));
- const cp2y=f32(1+f32(f32(f32(h-1)*0.5)*f32(1+e)));
+ const cp1x=f32(m*0.5),cp1y=f32(f32(h*0.5)*f32(1+e));
+ const cp2x=f32(f32(1+m)*0.5),cp2y=f32(1+f32(f32(f32(h-1)*0.5)*f32(1+e)));
  for(let i=0;i<12;i++){
-  const x=f32(i/11);let t,y;
-  if(x<=m){t=m?f32(x/m):0;const u=f32(1-t);y=f32(f32(f32(f32(2*u)*t)*cp1y)+f32(f32(t*t)*h))}
-  else{t=f32(f32(x-m)/f32(1-m));const u=f32(1-t);y=f32(f32(f32(f32(u*u)*h)+f32(f32(f32(2*u)*t)*cp2y))+f32(t*t))}
-  a.push(roundEven(f32(y*1000))/1000)
+  const x=f32(i/11);
+  const y=x<=m?bfBezier(x,0,cp1x,m,0,cp1y,h):bfBezier(x,m,cp2x,1,h,cp2y,1);
+  // scaleRangef returns 1000.0f + (1000.0f * y), then lrintf.
+  a.push(roundEven(f32(f32(y*1000)+1000))-1000);
  }
- return a
+ return a.map(v=>v/1000)
 }
 function newer(x,mid,expo,hover){const a=newerTable(mid,expo,hover),v=clamp(Math.round(x*1000),0,1000),scaled=v*11,i=Math.floor(scaled/1000),rem=scaled%1000;if(i>=11)return a[11];return (Math.round(a[i]*1000)+Math.trunc(rem*(Math.round(a[i+1]*1000)-Math.round(a[i]*1000))/1000))/1000}
 let runId=0,lastPlot=null;
