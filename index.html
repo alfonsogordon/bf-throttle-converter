@@ -8,13 +8,13 @@ function oldCurve(x,mid,expo){const table=oldTable(mid,expo),v=clamp(Math.round(
 const f32=Math.fround;
 function roundEven(v){const n=Math.floor(v),fraction=v-n;return fraction<0.5?n:fraction>0.5?n+1:n+(n%2)}
 function newerTable(mid,expo,hover){
- const m=f32(f32(mid)/100),e=f32(f32(expo)/100),h=f32(f32(hover)/100),a=[];
- const cp1x=f32(m*0.5),cp1y=f32(f32(h*0.5)*f32(1+e));
- const cp2x=f32(f32(1+m)*0.5),cp2y=f32(1+f32(f32(f32(h-1)*0.5)*f32(1+e)));
+ const m=f32(mid/100),e=f32(expo/100),h=f32(hover/100),a=[];
+ const cp1y=f32(f32(h*0.5)*f32(1+e));
+ const cp2y=f32(1+f32(f32(f32(h-1)*0.5)*f32(1+e)));
  for(let i=0;i<12;i++){
   const x=f32(i/11);let t,y;
-  if(x<=m){t=m?f32(x/m):0;const u=f32(1-t);y=f32(f32(f32(f32(2*u)*t)*cp1y)+f32(t*t*h))}
-  else{t=f32(f32(x-m)/f32(1-m));const u=f32(1-t);y=f32(f32(f32(u*u)*h)+f32(f32(f32(2*u)*t)*cp2y)+f32(t*t))}
+  if(x<=m){t=m?f32(x/m):0;const u=f32(1-t);y=f32(f32(f32(f32(2*u)*t)*cp1y)+f32(f32(t*t)*h))}
+  else{t=f32(f32(x-m)/f32(1-m));const u=f32(1-t);y=f32(f32(f32(f32(u*u)*h)+f32(f32(f32(2*u)*t)*cp2y))+f32(t*t))}
   a.push(roundEven(f32(y*1000))/1000)
  }
  return a
@@ -82,7 +82,9 @@ function objective(tab){
 // microsecond (0.001 normalized). Use the triangle inequality to exclude only
 // candidates that provably cannot improve the current exact weighted error.
 let best={err:Infinity,peak:Infinity},evaluated=0;
-const roundingBound=Math.sqrt(totalWeight)*0.001;
+// Floating-point rounding and integer interpolation are each bounded by approximately
+// one PWM microsecond; use a conservative bound for safe pruning.
+const roundingBound=Math.sqrt(totalWeight)*0.002;
 function exactError(tab){
  let err=0,peak=0;
  for(let k=0;k<1001;k++){
